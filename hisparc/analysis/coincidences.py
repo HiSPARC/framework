@@ -12,8 +12,8 @@ import time
 
 from hisparc.analysis.traces import get_traces
 
-
-def search_coincidences(data, stations, window=200000, shifts=None, limit=None):
+def search_coincidences(data, stations, window=200000, shifts=None, limit=None,
+                        datelimit=None):
     """Search for coincidences
 
     Search for coincidences in a set of PyTables event tables, optionally
@@ -31,6 +31,7 @@ def search_coincidences(data, stations, window=200000, shifts=None, limit=None):
         part of the coincidence.  Default: 200000 (i.e. 200 us).
     :param shifts: a list of time shifts which may contain 'None'.
     :param limit: limit the number of events which are processed
+    :param datelimit: limit the number data being searched by start and end date
 
     :return: coincidences, timestamps. First a list of coincidences, which
         each consist of a list with indexes into the timestamps array as a
@@ -61,16 +62,14 @@ def search_coincidences(data, stations, window=200000, shifts=None, limit=None):
     # calculate the shifts in nanoseconds and cast them to long.
     # (prevent upcasting timestamps to float64 further on)
     if shifts:
-        for i in range(len(shifts)):
-            if shifts[i]:
-                shifts[i] = long(shifts[i] * 1e9)
+        shifts = [long(s * 1e9) if s else None for s in shifts]
 
-    timestamps = retrieve_timestamps(stations, shifts, limit)
+    timestamps = retrieve_timestamps(stations, shifts, limit, datelimit)
     coincidences = do_search_coincidences(timestamps, window)
 
     return coincidences, timestamps
 
-def retrieve_timestamps(stations, shifts=None, limit=None):
+def retrieve_timestamps(stations, shifts=None, limit=None, datelimit=None):
     """Retrieve all timestamps from all stations, optionally shifting them
 
     This function retrieves the timestamps from a list of event tables and
@@ -82,6 +81,7 @@ def retrieve_timestamps(stations, shifts=None, limit=None):
         different stations, hence the name)
     :param shifts: a list of time shifts which may contain 'None'.
     :param limit: limit the number of events which are processed
+    :param datelimit: limit the number data being searched by start and end date
 
     :return: list of tuples.  Each tuple consists of a timestamp followed
         by an index into the stations list which designates the detector
@@ -91,18 +91,24 @@ def retrieve_timestamps(stations, shifts=None, limit=None):
     """
     timestamps = []
     for i in range(len(stations)):
-        ts = [(x['ext_timestamp'], i, j) for j, x in
-              enumerate(stations[i][:limit])]
-        try:
+        if datelimit:
+            print ('Getting timestamps for: %s until %s' %
+                   (datelimit[0].date(), datelimit[1].date()))
+            ts = [(x['ext_timestamp'], i, j) for j, x in
+                  enumerate(stations[i].where('(%d <= timestamp) & '
+                                              '(timestamp < %d)' %
+                  (gm(datelimit[0].utctimetuple()),
+                   gm(datelimit[1].utctimetuple()))))]
+        else:
+            ts = [(x['ext_timestamp'], i, j) for j, x in
+                  enumerate(stations[i][:limit])]
+        if shifts:
             # shift data. carefully avoid upcasting (we're adding two
             # longs, which is a long, and casting that back to uint64. if
             # we're not careful, an intermediate value will be a float64,
             # which doesn't hold the precision to store nanoseconds.
-            ts = [(np.uint64(long(x[0]) + shifts[i]), x[1], x[2]) for x in
-                  ts]
-        except (TypeError, IndexError):
-            # shift is None or doesn't exist
-            pass
+            ts = [(np.uint64(long(x[0]) + shifts[i]), x[1], x[2]) for x in ts]
+
         timestamps.extend(ts)
 
     # sort the timestamps
@@ -129,9 +135,11 @@ def do_search_coincidences(timestamps, window=200000):
 
     """
     coincidences = []
+    length = len(timestamps)
 
     # traverse all timestamps
-    for i in xrange(len(timestamps)):
+    print 'Finding Coincidences'
+    for i in xrange(length):
 
         # build coincidence, starting with the current timestamp
         c = [i]
@@ -139,12 +147,14 @@ def do_search_coincidences(timestamps, window=200000):
 
         # traverse the rest of the timestamps
         for j in xrange(i + 1, len(timestamps)):
-            # if a timestamp is within the coincidence window, add it
-            if timestamps[j][0] - t0 < window:
-                c.append(j)
-            else:
-                # coincidence window has passed, break for-loop
-                break
+            #If the event is a duplicate of others found, skip it
+            if timestamps[j][:2] not in [timestamps[k][:2] for k in c]:
+                # if a timestamp is within the coincidence window, add it
+                if timestamps[j][0] - t0 < window:
+                    c.append(j)
+                else:
+                    # coincidence window has passed, break for-loop
+                    break
 
         # if we have more than one event in the coincidence, save it
         if len(c) > 1:

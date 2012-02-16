@@ -38,7 +38,7 @@ def reconstruct_time_differences(coincidence, dataset):
 
     times = []
     for i in range(4):
-        trace = [int(x) for x in 
+        trace = [int(x) for x in
                     zlib.decompress(traces[trace_idx[i]]).split(',')[:-1]]
         times.append(reconstruct_time_from_trace(trace))
 
@@ -96,7 +96,7 @@ def reconstruct_angles_from_set(detectors, times):
     if theta < 0:
         theta *= -1
         phi += pi
-    
+
     phi %= 2 * pi
 
     #print detectors
@@ -109,7 +109,7 @@ def reconstruct_angles_from_set(detectors, times):
 
     #print dt2 * r1 * cos(phi1), dt1 * r2 * cos(phi2)
     #print dt2 * r1 * sin(phi1), dt1 * r2 * sin(phi2)
-    
+
     return detectors, theta, phi
 
 def calc_distance(det0, det1):
@@ -173,7 +173,7 @@ def angle_graphs(data, coincidences, ph_threshold, accuracy):
         if theta[i][1] > accuracy:
             ht.append(theta[i][0])
             kt.append(cs[i]['kascade_zenith'])
-    
+
     hp, kp = [], []
     for i in range(len(phi)):
         if phi[i][1] > accuracy:
@@ -185,7 +185,9 @@ def angle_graphs(data, coincidences, ph_threshold, accuracy):
     oa = []
     for i in range(len(angles)):
         if theta[i][1] > accuracy and phi[i][1] > accuracy:
-            oa.append(opening_angle(theta[i][0], phi[i][0], cs[i]['kascade_zenith'], cs[i]['kascade_azimuth']))
+            oa.append(opening_angle(theta[i][0], phi[i][0],
+                                    cs[i]['kascade_zenith'],
+                                    cs[i]['kascade_azimuth']))
 
     pylab.figure()
     pylab.hist(ht, bins=50, histtype='step', range=[0, pi/2], label='HiSPARC')
