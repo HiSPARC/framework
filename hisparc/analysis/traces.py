@@ -32,13 +32,15 @@ def get_traces(traces_array, indexes):
     traces = []
 
     for i in indexes:
-        trace = zlib.decompress(traces_array[i]).split(',')
+        # See if detector actually exists
+        if i != -1:
+            trace = zlib.decompress(traces_array[i]).split(',')
 
-        # See if the last value of the trace is empty.  if so, remove it
-        if trace[-1] == '':
-            trace = trace[:-1]
+            # See if the last value of the trace is empty.  if so, remove it
+            if trace[-1] == '':
+                trace = trace[:-1]
 
-        traces.append(np.array(map(adc_to_mv, trace)))
+            traces.append(np.array(map(adc_to_mv, trace)))
 
     return traces
 
