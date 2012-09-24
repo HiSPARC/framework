@@ -58,7 +58,7 @@ def search_coincidences(data, stations, window=200000, shifts=None, limit=None):
     # get the 'events' tables from the groups or groupnames
     event_tables = []
     for station_group in stations:
-        station_group = data.getNode('/', station_group)
+        station_group = data.getNode(station_group)
         if 'events' in station_group:
             event_tables.append(data.getNode(station_group, 'events'))
     stations = event_tables
