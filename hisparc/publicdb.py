@@ -68,7 +68,7 @@ def download_data(file, group, station_id, start, end, get_blobs=False):
         tmp_datafile, headers = urllib.urlretrieve(url)
         logger.info("Storing data...")
         store_data(file, group, tmp_datafile, t0, t1)
-        logger.info("Done.")
+    logger.info("Done.")
 
 def store_data(dst_file, dst_group, src_filename, t0, t1):
     """Copy data from a temporary file to the destination file
@@ -148,26 +148,26 @@ def datetimerange(start, stop):
         >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
         ...                        datetime.datetime(2010, 1, 1, 13)):
         ...     x
-        ...     
+        ...
         (datetime.datetime(2010, 1, 1, 11, 0), datetime.datetime(2010, 1, 1, 13, 0))
 
         >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
         ...                        datetime.datetime(2010, 1, 2)):
         ...     x
-        ...     
+        ...
         (datetime.datetime(2010, 1, 1, 11, 0), None)
 
         >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
         ...                        datetime.datetime(2010, 1, 2, 13)):
         ...     x
-        ...     
+        ...
         (datetime.datetime(2010, 1, 1, 11, 0), None)
         (datetime.datetime(2010, 1, 2, 0, 0), datetime.datetime(2010, 1, 2, 13, 0))
 
         >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
         ...                        datetime.datetime(2010, 1, 5, 13)):
         ...     x
-        ...     
+        ...
         (datetime.datetime(2010, 1, 1, 11, 0), None)
         (datetime.datetime(2010, 1, 2, 0, 0), None)
         (datetime.datetime(2010, 1, 3, 0, 0), None)
