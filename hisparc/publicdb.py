@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('hisparc.publicdb')
 
 #PUBLICDB_XMLRPC_URL = 'http://localhost:8000/raw_data/rpc'
-PUBLICDB_XMLRPC_URL = 'http://data.hisparc.nl/django/raw_data/rpc'
+PUBLICDB_XMLRPC_URL = 'http://data.hisparc.nl/raw_data/rpc'
 
 def download_data(file, group, station_id, start, end, get_blobs=False):
     """Download raw data from the datastore
