@@ -1,7 +1,7 @@
 Note: *this repository is deprecated!*
 
-This code has been included in SAPPHiRE, which will be released sometime
-in spring, early summer, 2012.
+This code has been included and improved in
+[SAPPHiRE](https://github.com/HiSPARC/sapphire).
 
 Old description below:
 
